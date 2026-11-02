@@ -80,7 +80,8 @@ src/brain/           scripted.js (free), anthropic.js (the voice), index.js (pic
 src/loop.js            the loop as a module
 src/server.js          the room server: / /events /state /book /offer
 web/index.html         the room page and the plate overlay
-web/room.js            the room, the cat, the animations
+web/room.js            the room, the spots, the animations
+web/cat.js             the cat: a low-poly model built from code, posed by blending
 scripts/build-demo.js  packages the room as one file in demo mode
 ```
 
@@ -88,4 +89,4 @@ scripts/build-demo.js  packages the room as one file in demo mode
 
 - step 3: the visitor page, offering form and book reader
 - step 4: obs browser source, clips
-- the cat's model: he is spheres and cones for now. a proper low-poly cat is the first thing to upgrade.
+- the cat: whiskers twitch, ears flatten when bleak, but he has one walk and no jump. a real jump onto the desk is the next animation.

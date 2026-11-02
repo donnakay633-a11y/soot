@@ -3,6 +3,7 @@
 // with no server (or ?demo) it plays a scripted evening so the room can be looked at on its own.
 
 import * as THREE from 'three';
+import { makeCat } from './cat.js';
 
 // ---------- palette ----------
 const P = {
@@ -305,33 +306,8 @@ fill.position.set(8, 5, 9);
 scene.add(fill);
 
 // ---------- the cat ----------
-const cat = new THREE.Group();
-const catMat = mat(P.cat, { roughness: 0.75 });
-const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), catMat);
-body.scale.set(1.25, 0.8, 1);
-body.position.y = 0.3;
-body.castShadow = true;
-const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), catMat);
-head.position.set(0.36, 0.56, 0);
-head.castShadow = true;
-const earL = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.18, 4), catMat);
-earL.position.set(0.38, 0.78, -0.11);
-earL.rotation.z = 0.1;
-const earR = earL.clone();
-earR.position.z = 0.11;
-const eyeMat = new THREE.MeshBasicMaterial({ color: P.eye });
-const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.042, 8, 8), eyeMat);
-eyeL.position.set(0.55, 0.6, -0.08);
-const eyeR = eyeL.clone();
-eyeR.position.z = 0.08;
-const tailSegs = [];
-for (let i = 0; i < 6; i++) {
-  const s = new THREE.Mesh(new THREE.SphereGeometry(0.07 - i * 0.006, 8, 8), catMat);
-  s.castShadow = true;
-  cat.add(s);
-  tailSegs.push(s);
-}
-cat.add(body, head, earL, earR, eyeL, eyeR);
+const soot = makeCat();
+const cat = soot.group;
 cat.position.set(-0.6, 0, 1.2);
 scene.add(cat);
 
@@ -439,6 +415,8 @@ function plate(st) {
 }
 
 // ---------- frame ----------
+const params = new URLSearchParams(location.search);
+const CLOSE = params.has('close'); // a close camera on the cat, for checking him
 const clock = new THREE.Clock();
 const ease = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -459,42 +437,23 @@ function frame() {
   } else {
     S.face = S.target.face;
   }
-  cat.scale.x += (S.face - cat.scale.x) * 0.15;
+  const want = S.face > 0 ? 0 : Math.PI;
+  let diff = want - cat.rotation.y;
+  diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+  cat.rotation.y += diff * Math.min(1, dt * 6);
 
-  // posture
-  const idle = S.t >= 1;
+  // pose
+  const moving = S.t < 1;
   const a = S.action;
-  let bodyY = 0.3, bodySY = 0.8, headY = 0.56, headX = 0.36, eyes = true, headTilt = 0;
-  if (S.asleep || a === 'sleep') {
-    bodyY = 0.2; bodySY = 0.55; headY = 0.3; headX = 0.3; eyes = false;
-  } else if (idle && (a === 'read' || a === 'write')) {
-    headY = 0.46 + Math.sin(now * 1.6) * 0.015; headX = 0.42; headTilt = 0.35;
-  } else if (idle && a === 'eat') {
-    headY = 0.32 + Math.abs(Math.sin(now * 5)) * 0.06; headX = 0.46; headTilt = 0.6;
-  } else if (idle && a === 'look out the window') {
-    headY = 0.66; headX = 0.3; headTilt = -0.25;
-  } else if (idle && a === 'check the mirror') {
-    headY = 0.7; headX = 0.3; headTilt = -0.4;
-  } else if (idle && a === 'nothing') {
-    bodyY = 0.28 + Math.sin(now * 1.2) * 0.008;
-  }
-  body.position.y += (bodyY - body.position.y) * 0.1;
-  body.scale.y += (bodySY - body.scale.y) * 0.1;
-  head.position.y += (headY - head.position.y) * 0.1;
-  head.position.x += (headX - head.position.x) * 0.1;
-  head.rotation.z += (headTilt - head.rotation.z) * 0.1;
-  earL.position.y = earR.position.y = head.position.y + 0.22;
-  earL.position.x = earR.position.x = head.position.x + 0.02;
-  eyeL.visible = eyeR.visible = eyes;
-  eyeL.position.set(head.position.x + 0.19, head.position.y + 0.04 - headTilt * 0.08, -0.08);
-  eyeR.position.set(head.position.x + 0.19, head.position.y + 0.04 - headTilt * 0.08, 0.08);
-
-  // tail
-  const sway = S.asleep ? 0.15 : S.mood === 'feral' || S.mood === 'restless' ? 1.2 : S.mood === 'bleak' ? 0.1 : 0.5;
-  tailSegs.forEach((s, i) => {
-    const k = i / tailSegs.length;
-    s.position.set(-0.34 - k * 0.5, 0.3 + Math.sin(k * 2.2) * 0.3 * (S.asleep ? 0.3 : 1) + Math.sin(now * 2 + k * 2) * 0.05 * sway, Math.sin(now * 1.7 + k * 3) * 0.12 * sway);
-  });
+  let pose = 'sit';
+  if (S.asleep || a === 'sleep') pose = 'sleep';
+  else if (moving) pose = 'walk';
+  else if (a === 'read' || a === 'write' || a === 'count the till') pose = 'read';
+  else if (a === 'eat') pose = 'eat';
+  else if (a === 'look out the window' || a === 'check the mirror' || a === 'find the offering') pose = 'look';
+  else if (a === 'tend stock' || a === 'light candle' || a === 'cast') pose = 'stand';
+  soot.setPose(pose);
+  soot.update(dt, now, S.asleep ? 'asleep' : S.mood, moving);
 
   // candles flicker
   candles.forEach((c, i) => {
@@ -513,13 +472,16 @@ function frame() {
     crystalLight.intensity = 1.2 + Math.sin(now * 3) * 0.3;
   }
 
+  if (CLOSE) {
+    camera.position.set(cat.position.x + 2.6, cat.position.y + 1.7, cat.position.z + 2.4);
+    camera.lookAt(cat.position.x, cat.position.y + 0.45, cat.position.z);
+  }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
 frame();
 
 // ---------- feed ----------
-const params = new URLSearchParams(location.search);
 let gotState = false;
 
 function connect() {

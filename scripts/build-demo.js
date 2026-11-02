@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ver = JSON.parse(fs.readFileSync(path.join(root, 'node_modules/three/package.json'), 'utf8')).version;
 let html = fs.readFileSync(path.join(root, 'web/index.html'), 'utf8');
-const js = fs.readFileSync(path.join(root, 'web/room.js'), 'utf8').replace("if (params.has('demo')) startDemo();\nelse {", 'if (true) startDemo();\nelse {');
+const cat = fs.readFileSync(path.join(root, 'web/cat.js'), 'utf8').replace("import * as THREE from 'three';", '').replace('export function makeCat', 'function makeCat');
+const js = (cat + '\n' + fs.readFileSync(path.join(root, 'web/room.js'), 'utf8').replace("import { makeCat } from './cat.js';", '')).replace("if (params.has('demo')) startDemo();\nelse {", 'if (true) startDemo();\nelse {');
 html = html
   .replace('"/vendor/three/build/three.module.js"', `"https://cdn.jsdelivr.net/npm/three@${ver}/build/three.module.js"`)
   .replace('<script type="module" src="/room.js"></script>', `<script type="module">\n${js}\n</script>`);
