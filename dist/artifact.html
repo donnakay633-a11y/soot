@@ -1,60 +1,55 @@
 <title>the low door</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: dark;
-    --panel-accent: #e0a040;
-    --accent-glow: rgba(224,160,64,.30);
-    --accent-dim: rgba(224,160,64,.12);
-    --bg-outer: rgba(10,10,12,.86);
-    --text-1: #f1ece0;
-    --text-2: #b8b0a0;
-    --text-3: #7d7868;
-    --line: rgba(255,255,255,.10);
-    --line-soft: rgba(255,255,255,.06);
-    --radius-panel: 14px;
-    --ease-out: cubic-bezier(0.22,1,0.36,1);
+    --ink: #e8e1d1;
+    --ink-2: #a9a399;
+    --ink-3: #5e5a55;
+    --blood: #c8182f;
+    --foil: #b9b2a2;
+    --line: rgba(232,225,209,.16);
+    --line-soft: rgba(232,225,209,.07);
+    --display: 'Cinzel', 'Times New Roman', serif;
+    --body: 'Spectral', Georgia, serif;
   }
-  html, body { margin: 0; height: 100%; padding: 0; background: #0b0d0a; overflow: hidden; font-family: 'Rajdhani', sans-serif; color: var(--text-1); }
+  html, body { margin: 0; height: 100%; padding: 0; background: #0b0d0a; overflow: hidden; font-family: var(--body); color: var(--ink); }
   html { font-size: calc(100vh / 108); }
   canvas { display: block; }
 
   .plate {
-    position: fixed; left: max(2.4rem, env(safe-area-inset-left, 0px)); bottom: max(2.4rem, env(safe-area-inset-bottom, 0px)); width: 34rem; max-width: calc(100vw - 4.8rem);
-    background: var(--bg-outer); border: 1px solid var(--line); border-radius: var(--radius-panel);
-    padding: 1.6rem 1.9rem 1.7rem; box-shadow: 0 1.2rem 3rem rgba(0,0,0,.6), 0 0 2.4rem var(--accent-dim);
-    opacity: 0; transform: translateY(1.2rem) scale(.985);
-    transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
+    position: fixed; left: max(2.6rem, env(safe-area-inset-left, 0px)); bottom: max(2.6rem, env(safe-area-inset-bottom, 0px)); width: 36rem; max-width: calc(100vw - 5.2rem);
+    background: rgba(8,8,10,.82); border: 1px solid var(--line);
+    padding: 1.9rem 2.2rem 2rem;
+    opacity: 0; transform: translateY(1rem);
+    transition: opacity .3s ease-out, transform .3s ease-out;
   }
+  .plate::before { content: ''; position: absolute; inset: .55rem; border: 1px solid var(--line-soft); pointer-events: none; }
   .plate.on { opacity: 1; transform: none; }
-  .plate::before, .plate::after {
-    content: ''; position: absolute; width: 2.2rem; height: 2.2rem; border-color: var(--panel-accent); border-style: solid;
-  }
-  .plate::before { top: .6rem; left: .6rem; border-width: 2px 0 0 2px; }
-  .plate::after { bottom: .6rem; right: .6rem; border-width: 0 2px 2px 0; }
 
-  .eyebrow { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: .22em; text-transform: uppercase; color: var(--panel-accent); display: flex; justify-content: space-between; }
-  .eyebrow span:last-child { color: var(--text-3); font-variant-numeric: tabular-nums; }
-  .mood { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: .06em; text-transform: uppercase; margin-top: .5rem; }
-  .say { font-size: 1.7rem; font-weight: 600; line-height: 1.35; margin-top: .9rem; min-height: 2.3rem; color: var(--text-1); }
-  .did { font-size: 1.3rem; font-weight: 500; letter-spacing: .02em; color: var(--text-3); margin-top: .35rem; }
+  .eyebrow { font-family: var(--display); font-size: 1.05rem; letter-spacing: .26em; text-transform: uppercase; color: var(--foil); display: flex; justify-content: space-between; }
+  .eyebrow span:last-child { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .mood { font-family: var(--display); font-weight: 400; font-size: 2.3rem; letter-spacing: .2em; text-transform: uppercase; margin-top: .7rem; color: var(--blood); }
+  .say { font-family: var(--body); font-style: italic; font-weight: 300; font-size: 1.95rem; line-height: 1.3; margin-top: .9rem; min-height: 2.4rem; color: var(--ink); }
+  .did { font-size: 1.3rem; color: var(--ink-3); margin-top: .4rem; }
 
-  .needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid var(--line-soft); }
-  .need label { display: block; font-size: 1.05rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); }
-  .need .val { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: .04em; font-variant-numeric: tabular-nums; margin-top: .2rem; }
-  .need .bar { height: .4rem; background: var(--line-soft); border-radius: .2rem; margin-top: .45rem; overflow: hidden; }
-  .need .bar i { display: block; height: 100%; width: 0; background: var(--panel-accent); transition: width .4s var(--ease-out); }
-  .need.warn .bar i { background: #c9553d; }
+  .needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .need label { display: block; font-family: var(--display); font-size: .95rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
+  .need .val { font-family: var(--body); font-weight: 600; font-size: 1.7rem; font-variant-numeric: tabular-nums; margin-top: .15rem; color: var(--ink); }
+  .need .bar { height: 1px; background: var(--line); margin-top: .55rem; overflow: hidden; }
+  .need .bar i { display: block; height: 100%; width: 0; background: var(--foil); transition: width .4s ease-out; }
+  .need.warn .bar i { background: var(--blood); }
+  .need.warn .val { color: var(--blood); }
 
-  .diary { position: fixed; right: 2.4rem; bottom: 2.4rem; width: 30rem; max-width: calc(100vw - 4.8rem); font-size: 1.25rem; font-weight: 500; color: var(--text-3); line-height: 1.5; text-align: right; pointer-events: none; }
+  .diary { position: fixed; right: 2.6rem; bottom: 2.6rem; width: 32rem; max-width: calc(100vw - 5.2rem); font-size: 1.3rem; font-style: italic; font-weight: 300; color: var(--ink-3); line-height: 1.5; text-align: right; pointer-events: none; }
   .diary div { opacity: .55; }
-  .diary div:last-child { opacity: 1; color: var(--text-2); }
+  .diary div:last-child { opacity: 1; color: var(--ink-2); }
 
-  .corner { position: fixed; top: 2rem; left: 2.4rem; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: .22em; text-transform: uppercase; color: var(--text-3); }
-  .corner b { color: var(--panel-accent); font-weight: 700; }
+  .corner { position: fixed; top: 2.2rem; left: 2.6rem; font-family: var(--display); font-size: 1.05rem; letter-spacing: .26em; text-transform: uppercase; color: var(--ink-3); }
+  .corner b { color: var(--foil); font-weight: 400; }
 
-  @media (max-width: 700px) { .diary { display: none; } .plate { width: auto; right: 2.4rem; } }
+  @media (max-width: 700px) { .diary { display: none; } .plate { width: auto; right: 2.6rem; } }
 </style>
 
 <div class="corner"><b>soot</b> &nbsp;·&nbsp; the low door &nbsp;·&nbsp; <span id="brain">connecting</span></div>
