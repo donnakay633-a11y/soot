@@ -100,7 +100,7 @@ function render() {
   if (!book) return;
   let html = '';
   if (tab === 'first') {
-    html = '<h2>the first page. he cannot rewrite this one.</h2>';
+    html = '<h3>the first page. he cannot rewrite this one.</h3>';
     for (const line of book.first.split('\n')) {
       if (!line.trim()) continue;
       if (/^\d+\. /.test(line)) html += `<p>${esc(line)}</p>`;
@@ -108,12 +108,12 @@ function render() {
       else html += `<p>${esc(line)}</p>`;
     }
   } else if (tab === 'front') {
-    html = '<h2>front. spells. twelve at most.</h2>';
+    html = '<h3>front. spells. twelve at most.</h3>';
     const items = book.front.split('\n').filter((l) => l.startsWith('- '));
     if (!items.length) html += '<p class="empty">nothing written here yet.</p>';
     html += '<ul>' + items.map((l) => `<li class="${/^- ~~/.test(l) ? 'struck' : ''}">${esc(l.slice(2).replace(/~~/g, ''))}</li>`).join('') + '</ul>';
   } else if (tab === 'middle') {
-    html = '<h2>middle. what happened. rewritten every time he sleeps.</h2>';
+    html = '<h3>middle. what happened. rewritten every time he sleeps.</h3>';
     const lines = book.middle.split('\n').filter((l) => l.trim() && !l.startsWith('#'));
     if (!lines.length) html += '<p class="empty">nothing has happened yet, or he has not written it down.</p>';
     for (const l of lines) {
@@ -125,11 +125,11 @@ function render() {
       }
     }
   } else if (tab === 'back') {
-    html = '<h2>back. money and people.</h2>';
+    html = '<h3>back. money and people.</h3>';
     const money = /## money\n([^\n]*)/.exec(book.back)?.[1] || '';
     html += `<p>${esc(money)}</p>`;
     const people = [...book.back.matchAll(/^- (.+?): (\d+)$/gm)].map((m) => [m[1], Number(m[2])]);
-    html += '<h2 style="margin-top:22px">people</h2>';
+    html += '<h2 style="margin-top:22px">people</h3>';
     if (!people.length) html += '<p class="empty">nobody yet.</p>';
     else {
       people.sort((a, b) => b[1] - a[1]);
