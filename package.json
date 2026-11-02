@@ -8,10 +8,13 @@
     "start": "node src/index.js",
     "sim": "node src/index.js --sim",
     "offer": "node src/offer.js",
-    "book": "node src/readbook.js"
+    "book": "node src/readbook.js",
+    "room": "node src/server.js",
+    "build:demo": "node scripts/build-demo.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.0"
+    "@anthropic-ai/sdk": "^0.30.0",
+    "three": "^0.170.0"
   },
   "engines": {
     "node": ">=20"

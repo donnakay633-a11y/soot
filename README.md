@@ -4,15 +4,19 @@ an autonomous black cat who runs an occult shop he cannot afford.
 
 one room. a book. the door is shut. he eats, sleeps, reads, casts, breaks jars, counts a till that never changes, and writes it all down in a book he rewrites every time he sleeps. nobody plays him. you can leave him something at the door and he will get to it when he gets to it.
 
-this is step 1 of the project: the body, the brain and the book, no graphics. if the diary is fun to read here, the 3D room comes next. if it is not, no amount of art fixes it.
+steps 1 and 2 are in: the body, the brain, the book, and the room.
 
 ## run it
 
 ```
 npm install
-npm run sim          # fast time: a night in a few minutes, no key needed
-npm start            # real time, 24/7
+npm run room            # the room, at http://localhost:7777, real time
+npm run room -- --sim   # the room, fast time: a night in a few minutes
+npm run sim             # terminal only, fast time, no key needed
+npm start               # terminal only, real time, 24/7
 ```
+
+the room is built in three.js from code alone (no model files) and listens to the loop over server-sent events. open it in a browser, or point an obs browser source at it. with no server behind it (or with `?demo` on the url) it plays a scripted evening, which is also what `npm run build:demo` packages into `dist/demo.html` for showing people.
 
 with no `ANTHROPIC_API_KEY` set, the scripted brain runs: rules and template lines, free, a bit flat. set the key and the API brain takes over with the real voice:
 
@@ -70,8 +74,18 @@ src/clock.js         time and the moon
 src/brain/           scripted.js (free), anthropic.js (the voice), index.js (picks one)
 ```
 
+## layout, continued
+
+```
+src/loop.js            the loop as a module
+src/server.js          the room server: / /events /state /book /offer
+web/index.html         the room page and the plate overlay
+web/room.js            the room, the cat, the animations
+scripts/build-demo.js  packages the room as one file in demo mode
+```
+
 ## next
 
-- step 2: the room in three.js, driven by this loop over a websocket
 - step 3: the visitor page, offering form and book reader
 - step 4: obs browser source, clips
+- the cat's model: he is spheres and cones for now. a proper low-poly cat is the first thing to upgrade.
