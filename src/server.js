@@ -4,6 +4,7 @@
 //   npm run room -- --sim   fast time
 //
 // GET /            the room
+// GET /visit       the visitor page: leave an offering, read the book
 // GET /events      server-sent events, one state object per tick
 // GET /state       the latest state as json
 // GET /book        the whole book as text
@@ -93,6 +94,7 @@ http
     if (p.startsWith('/vendor/three/')) {
       return serveFile(res, path.join(three, p.replace('/vendor/three/', '')));
     }
+    if (p === '/visit') return serveFile(res, path.join(web, 'visit.html'));
     serveFile(res, path.join(web, p === '/' ? 'index.html' : p));
   })
   .listen(PORT, () => {

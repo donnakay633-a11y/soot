@@ -13,4 +13,10 @@ html = html
   .replace('<script type="module" src="/room.js"></script>', `<script type="module">\n${js}\n</script>`);
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist/demo.html'), html);
+// the visitor page, same idea: one file, demo data
+let v = fs.readFileSync(path.join(root, 'web/visit.html'), 'utf8');
+const vjs = fs.readFileSync(path.join(root, 'web/visit.js'), 'utf8');
+v = v.replace('<script src="/visit.js"></script>', `<script>\n${vjs}\n</script>`);
+fs.writeFileSync(path.join(root, 'dist/visit-demo.html'), v);
+console.log('dist/visit-demo.html', (v.length / 1024).toFixed(0) + ' kb');
 console.log('dist/demo.html', (html.length / 1024).toFixed(0) + ' kb, three ' + ver);

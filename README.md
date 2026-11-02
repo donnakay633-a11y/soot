@@ -4,7 +4,7 @@ an autonomous black cat who runs an occult shop he cannot afford.
 
 one room. a book. the door is shut. he eats, sleeps, reads, casts, breaks jars, counts a till that never changes, and writes it all down in a book he rewrites every time he sleeps. nobody plays him. you can leave him something at the door and he will get to it when he gets to it.
 
-steps 1 and 2 are in: the body, the brain, the book, and the room.
+steps 1 to 3 are in: the body, the brain, the book, the room, and the visitor page.
 
 ## run it
 
@@ -28,6 +28,8 @@ npm start
 the model and the brain are one line each in `config.json`.
 
 ## leave him something
+
+open http://localhost:7777/visit while the room is running: a form to leave something at the door and a reader for the book. or from the terminal:
 
 ```
 npm run offer -- "your name" "what you want to say"
@@ -82,11 +84,13 @@ src/server.js          the room server: / /events /state /book /offer
 web/index.html         the room page and the plate overlay
 web/room.js            the room, the spots, the animations
 web/cat.js             the cat: a low-poly model built from code, posed by blending
+web/visit.html         the visitor page: offering form and book reader
+web/visit.js           its script, with demo data for when there is no server
 scripts/build-demo.js  packages the room as one file in demo mode
 ```
 
 ## next
 
-- step 3: the visitor page, offering form and book reader
-- step 4: obs browser source, clips
+- step 4: obs browser source and clips. the room is already a browser source; what is left is a 9:16 layout for it.
+- the visitor page is on the same local server as the room. putting it on the internet means hosting the server somewhere (a small vps or a tunnel) and that is its own step.
 - the cat: whiskers twitch, ears flatten when bleak, but he has one walk and no jump. a real jump onto the desk is the next animation.
