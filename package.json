@@ -1,0 +1,19 @@
+{
+  "name": "soot",
+  "version": "0.1.0",
+  "description": "An autonomous black cat who runs an occult shop he cannot afford.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "sim": "node src/index.js --sim",
+    "offer": "node src/offer.js",
+    "book": "node src/readbook.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

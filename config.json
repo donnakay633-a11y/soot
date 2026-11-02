@@ -1,0 +1,35 @@
+{
+  "brain": "auto",
+  "model": "claude-haiku-5-5",
+  "name": "soot",
+  "shop": "the low door",
+
+  "timeScale": 1,
+  "loopSeconds": {
+    "content": 10,
+    "restless": 8,
+    "anxious": 8,
+    "bleak": 20,
+    "smug": 5,
+    "feral": 5,
+    "asleep": 30
+  },
+
+  "drift": {
+    "hungerPerMin": 0.33,
+    "sleepPerMin": 0.2,
+    "purposePerMin": 0.1,
+    "moneyPerCandleHour": 1
+  },
+
+  "start": {
+    "money": 9,
+    "stock": 3,
+    "herbs": 6,
+    "bowl": 1,
+    "candles": 2
+  },
+
+  "diaryMaxLines": 60,
+  "rewriteOnSleep": true
+}
