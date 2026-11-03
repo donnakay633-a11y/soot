@@ -89,9 +89,12 @@ export async function startLoop({ sim = false, maxTicks = Infinity, quiet = fals
     });
 
     if (!action || !ACTIONS[action] || !ACTIONS[action].can(world)) {
-      action = 'nothing';
+      log(dim(`  (brain said "${action}", which he cannot do right now)`));
+      const fallback = actions.filter((a) => a.name !== 'nothing');
+      action = fallback.length ? fallback[Math.floor(Math.random() * fallback.length)].name : 'nothing';
       say = say || 'sat.';
     }
+    world.idleRun = action === 'nothing' ? (world.idleRun || 0) + 1 : 0;
 
     const t = hhmm(clock.now());
     const event = ACTIONS[action].do(world, book, { say });

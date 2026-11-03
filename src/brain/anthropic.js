@@ -2,6 +2,33 @@
 // rules go in a cached system prompt so every tick only pays for the observation.
 
 import Anthropic from '@anthropic-ai/sdk';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const LOG = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'brain.log');
+function logRaw(kind, text) {
+  try {
+    fs.appendFileSync(LOG, `--- ${new Date().toISOString()} ${kind}\n${text}\n`);
+  } catch {}
+}
+
+// pull an action and a line out of whatever shape the model answered in
+export function parseReply(text, actionNames) {
+  const clean = text.replace(/[*_`"]/g, '');
+  let action = /ACTION\s*:\s*(.+)/i.exec(clean)?.[1]?.trim().toLowerCase().replace(/[.!]+$/, '');
+  let say = /SAY\s*:\s*(.+)/i.exec(clean)?.[1]?.trim();
+  const names = [...actionNames].sort((a, b) => b.length - a.length);
+  if (!action || !actionNames.includes(action)) {
+    const hay = (action || clean).toLowerCase();
+    action = names.find((n) => hay.includes(n));
+  }
+  if (!say) {
+    const lines = clean.split('\n').map((l) => l.trim()).filter((l) => l && !/^action/i.test(l));
+    say = lines[lines.length - 1];
+  }
+  return { action, say };
+}
 
 const VOICE = `you are a black cat called {name}. you run an occult shop called {shop}. one room. the door is shut.
 you write in lowercase, short sentences, concrete. you never explain a feeling, you report what you did about it.
@@ -9,9 +36,10 @@ you take the book seriously and the accounts not at all. you are funny by accide
 you are suspicious, easily flattered, prone to sudden conviction. you want the shop open, to be left alone, and to be visited. you have not noticed these conflict.
 
 you will be shown what is going on and a list of things you can do. pick exactly one.
-reply with two lines only:
-ACTION: <one action name from the list, exactly as written>
-SAY: <one short line in your voice about it, under 25 words>`;
+sitting and doing nothing is allowed but it is rarely what a cat with a shop does. prefer doing something.
+reply with exactly two plain lines, no formatting, no quotes, no extra words, like this:
+ACTION: read
+SAY: page forty again. the one about doors. it still wants a key.`;
 
 export function makeAnthropicBrain(config) {
   const client = new Anthropic();
@@ -48,9 +76,9 @@ export function makeAnthropicBrain(config) {
         messages: [{ role: 'user', content: user }],
       });
       const text = res.content.map((c) => c.text || '').join('\n');
-      const action = /ACTION:\s*(.+)/i.exec(text)?.[1]?.trim().toLowerCase();
-      const say = /SAY:\s*(.+)/i.exec(text)?.[1]?.trim();
-      return { action, say };
+      const out = parseReply(text, actions.map((a) => a.name));
+      if (!out.action) logRaw('could not parse', text);
+      return out;
     },
 
     async rewrite({ firstPage, rawLines, front, people, money }) {

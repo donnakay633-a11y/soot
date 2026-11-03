@@ -137,7 +137,7 @@ export const ACTIONS = {
   },
   nothing: {
     desc: 'sit. do nothing',
-    can: () => true,
+    can: (w) => (w.idleRun || 0) < 3, // three in a row and he has to do something
     do: () => 'sat',
   },
 };
