@@ -45,7 +45,16 @@ $('form').addEventListener('submit', async (e) => {
   $('send').disabled = true;
   try {
     const r = await fetch('/offer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: n, text: t }) });
-    if (!r.ok) throw new Error(await r.text());
+    if (!r.ok) {
+      const msg = await r.text();
+      if (r.status === 429 || r.status === 400) {
+        err.textContent = msg;
+        err.classList.add('on');
+        $('send').disabled = false;
+        return;
+      }
+      throw new Error(msg);
+    }
     done(`left it by the door. he will get to it, ${n}. read the back of the book later to see where you stand.`);
     text.value = '';
     $('count').textContent = '0';

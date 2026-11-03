@@ -16,6 +16,18 @@ import { collectOfferings } from './offerings.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const root = path.join(here, '..');
 
+// where the book and the offerings live. DATA_DIR on a server (a persistent disk), the repo itself at home.
+export const dataDir = process.env.DATA_DIR || root;
+export const bookDir = path.join(dataDir, 'book');
+export const offeringsDir = path.join(dataDir, 'offerings');
+export function seedData() {
+  fs.mkdirSync(offeringsDir, { recursive: true });
+  if (!fs.existsSync(path.join(bookDir, 'first-page.md'))) {
+    fs.mkdirSync(bookDir, { recursive: true });
+    for (const f of fs.readdirSync(path.join(root, 'book'))) fs.copyFileSync(path.join(root, 'book', f), path.join(bookDir, f));
+  }
+}
+
 const dim = (s) => `\x1b[2m${s}\x1b[0m`;
 const bold = (s) => `\x1b[1m${s}\x1b[0m`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -26,7 +38,8 @@ export async function startLoop({ sim = false, maxTicks = Infinity, quiet = fals
   const clock = makeClock(timeScale, sim ? todayAt(21, 40) : null);
   const log = quiet ? () => {} : (s) => console.log(s);
 
-  const book = makeBook(path.join(root, 'book'), (line) => log(`  ${dim(line)}`));
+  seedData();
+  const book = makeBook(bookDir, (line) => log(`  ${dim(line)}`));
   const world = makeWorld(config, clock);
   world.knownSpells = book.spells();
   world.standing = book.people();
@@ -68,7 +81,7 @@ export async function startLoop({ sim = false, maxTicks = Infinity, quiet = fals
 
   async function tick() {
     ticks += 1;
-    collectOfferings(path.join(root, 'offerings'), world);
+    collectOfferings(offeringsDir, world);
     drift(world);
     world.mood = deriveMood(world);
 

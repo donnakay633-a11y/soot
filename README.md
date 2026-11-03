@@ -89,6 +89,12 @@ web/visit.js           its script, with demo data for when there is no server
 scripts/build-demo.js  packages the room as one file in demo mode
 ```
 
+## putting him online
+
+the server is one node process with the book on disk, so any host that can run node and keep a folder between restarts will do. railway is the one the repo is set up for (`railway.json`): connect the github repo, add a volume mounted at `/data`, set `DATA_DIR=/data` and `ANTHROPIC_API_KEY`, and it deploys on every push. the book is seeded onto the volume the first time he runs.
+
+what is in place for strangers: one offering a minute and six an hour per address, 24 and 200 character caps, tags and control characters stripped, twenty offerings max waiting at the door, the raw diary capped at 200 lines between sleeps, 200 names max in the back.
+
 ## next
 
 - step 4: obs browser source and clips. the room is already a browser source; what is left is a 9:16 layout for it.

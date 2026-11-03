@@ -13,7 +13,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { startLoop, root } from './loop.js';
+import { startLoop, root, bookDir, offeringsDir } from './loop.js';
 
 const PORT = Number(process.env.PORT || 7777);
 const sim = process.argv.includes('--sim');
@@ -31,6 +31,27 @@ const loop = await startLoop({
     for (const res of clients) res.write(line);
   },
 });
+
+// one offering a minute per address, six an hour. strangers will test the door.
+const seen = new Map();
+function allow(ip) {
+  const now = Date.now();
+  const hits = (seen.get(ip) || []).filter((t) => now - t < 3600000);
+  if (hits.length >= 6 || (hits.length && now - hits[hits.length - 1] < 60000)) return false;
+  hits.push(now);
+  seen.set(ip, hits);
+  if (seen.size > 5000) seen.clear();
+  return true;
+}
+// plain text only: no control characters, no tags, collapsed whitespace, capped
+function clean(v, max) {
+  return String(v ?? '')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
 
@@ -65,7 +86,7 @@ http
       return res.end(JSON.stringify(latest || loop.snapshot()));
     }
     if (p === '/book') {
-      const dir = path.join(root, 'book');
+      const dir = bookDir;
       const text = ['first-page.md', 'front.md', 'middle.md', 'back.md']
         .map((f) => fs.readFileSync(path.join(dir, f), 'utf8'))
         .join('\n---\n');
@@ -73,19 +94,29 @@ http
       return res.end(text);
     }
     if (p === '/offer' && req.method === 'POST') {
+      const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
+      if (!allow(ip)) {
+        res.writeHead(429, { 'content-type': 'text/plain' });
+        return res.end('the door has had enough from you for now. come back in a bit.');
+      }
       let body = '';
-      req.on('data', (c) => (body += c));
+      req.on('data', (c) => {
+        body += c;
+        if (body.length > 2000) req.destroy();
+      });
       req.on('end', () => {
         try {
           const o = JSON.parse(body);
-          if (!o.name || !o.text) throw new Error('name and text');
-          const dir = path.join(root, 'offerings');
-          fs.mkdirSync(dir, { recursive: true });
-          fs.writeFileSync(path.join(dir, `${Date.now()}.json`), JSON.stringify({ name: o.name, text: o.text, at: new Date().toISOString() }));
+          const name = clean(o.name, 24);
+          const text = clean(o.text, 200);
+          if (!name || !text) throw new Error('name and text');
+          const pending = fs.readdirSync(offeringsDir).filter((f) => f.endsWith('.json')).length;
+          if (pending >= 20) throw new Error('the doorstep is full. he has not got to the last ones yet.');
+          fs.writeFileSync(path.join(offeringsDir, `${Date.now()}-${Math.random().toString(36).slice(2, 6)}.json`), JSON.stringify({ name, text, at: new Date().toISOString() }));
           res.writeHead(200, { 'content-type': 'application/json' });
           res.end('{"ok":true}');
         } catch (e) {
-          res.writeHead(400);
+          res.writeHead(400, { 'content-type': 'text/plain' });
           res.end(e.message);
         }
       });
@@ -98,5 +129,5 @@ http
     serveFile(res, path.join(web, p === '/' ? 'index.html' : p));
   })
   .listen(PORT, () => {
-    console.log(`\nthe room: http://localhost:${PORT}\n`);
+    console.log(`\nthe room: http://localhost:${PORT}\ndata: ${bookDir}\n`);
   });

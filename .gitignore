@@ -1,3 +1,5 @@
 node_modules/
 offerings/*.json
 .env
+brain.log
+data/

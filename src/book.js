@@ -33,9 +33,16 @@ export function makeBook(dir, log) {
 
     // append a diary line
     writeLine(time, text) {
-      const line = `${time}  ${text}`;
+      const line = `${time}  ${String(text).slice(0, 400)}`;
       fs.appendFileSync(p('middle.md'), line + '\n');
       if (log) log(line);
+      // the raw diary cannot grow without end between sleeps
+      const lines = read('middle.md').split('\n');
+      if (lines.length > 400) {
+        const head = lines.filter((l) => l.startsWith('#') || l.startsWith('> ') || !l.trim());
+        const raw = lines.filter((l) => l.trim() && !l.startsWith('#') && !l.startsWith('> '));
+        write('middle.md', [...head, ...raw.slice(-200)].join('\n') + '\n');
+      }
     },
 
     recentLines(n = 6) {
@@ -63,6 +70,12 @@ export function makeBook(dir, log) {
       const line = `- ${name}: ${standing}`;
       if (re.test(s)) s = s.replace(re, line);
       else s = s.replace('(nobody yet)\n', '').trimEnd() + '\n' + line + '\n';
+      // he can only keep so many names. the ones he knows least fall off the page.
+      const people = [...s.matchAll(/^- (.+?): (\d+)$/gm)].map((m) => [m[1], Number(m[2]), m[0]]);
+      if (people.length > 200) {
+        people.sort((a, b) => a[1] - b[1]);
+        for (const [, , raw] of people.slice(0, people.length - 200)) s = s.replace(raw + '\n', '');
+      }
       write('back.md', s);
     },
 
