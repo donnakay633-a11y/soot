@@ -71,13 +71,16 @@ export function makeAnthropicBrain(config) {
 
       const res = await client.messages.create({
         model: config.model,
-        max_tokens: 80,
+        max_tokens: 200,
+        // newer models think before answering by default, and the thinking eats the token budget.
+        // a cat deciding whether to look out the window does not need to deliberate.
+        thinking: { type: 'disabled' },
         system,
         messages: [{ role: 'user', content: user }],
       });
-      const text = res.content.map((c) => c.text || '').join('\n');
+      const text = res.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n');
       const out = parseReply(text, actions.map((a) => a.name));
-      if (!out.action) logRaw('could not parse', text);
+      if (!out.action) logRaw(`could not parse (stop: ${res.stop_reason})`, text || JSON.stringify(res.content));
       return out;
     },
 
@@ -103,11 +106,15 @@ export function makeAnthropicBrain(config) {
 
       const res = await client.messages.create({
         model: config.model,
-        max_tokens: 400,
+        max_tokens: 1200,
+        // the rewrite is the one place thinking is worth it. let it, with room.
+        thinking: { type: 'adaptive' },
+        output_config: { effort: 'low' },
         system,
         messages: [{ role: 'user', content: user }],
       });
-      const text = res.content.map((c) => c.text || '').join('\n');
+      const text = res.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n');
+      if (!text) logRaw(`rewrite empty (stop: ${res.stop_reason})`, JSON.stringify(res.content));
       const day = /DAY:\s*([\s\S]*?)(?:\nSPELLS:|$)/i.exec(text)?.[1]?.trim();
       const spells = (text.split(/SPELLS:/i)[1] || '')
         .split('\n')
